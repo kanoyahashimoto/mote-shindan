@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>あなたは何モテ？診断</title>
+<meta property="og:title" content="あなたは何モテ？診断">
+<meta property="og:description" content="24問でわかる！あなたのモテタイプ診断">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap');
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --pink:#D4537E;--pink-light:#FBE9F0;--pink-dark:#993556;
+  --bg:#FDF8FA;--surface:#FFFFFF;
+  --ink:#1A1814;--ink2:#6B6860;--ink3:#A8A69F;
+  --border:rgba(0,0,0,0.08);--radius:14px;
+}
+body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--ink);min-height:100vh;display:flex;flex-direction:column;align-items:center;}
+.app{width:100%;max-width:480px;padding:1.5rem 1.25rem 3rem;}
+.screen{display:none;}
+.screen.active{display:block;}
+
+/* START */
+.start-hero{text-align:center;padding:2rem 0 1.5rem;}
+.start-hero .big{font-size:40px;margin-bottom:10px;}
+.start-hero h1{font-size:24px;font-weight:700;color:var(--ink);margin-bottom:8px;}
+.start-hero p{font-size:14px;color:var(--ink2);line-height:1.7;}
+.illust-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:1.5rem 0;}
+.illust-cell{border-radius:12px;overflow:hidden;aspect-ratio:1;background:var(--surface);border:0.5px solid var(--border);}
+.illust-cell div{width:100%;height:100%;}
+.start-note{font-size:12px;color:var(--ink3);text-align:center;margin-bottom:1rem;}
+.btn-primary{width:100%;padding:15px;background:var(--pink);color:white;border:none;border-radius:12px;font-size:16px;font-weight:700;cursor:pointer;letter-spacing:.04em;}
+.btn-primary:hover{opacity:.88;}
+.btn-primary:active{transform:scale(.98);}
+
+/* QUIZ */
+.prog-wrap{margin-bottom:1.5rem;}
+.prog-bar{height:5px;background:var(--border);border-radius:99px;overflow:hidden;}
+.prog-fill{height:100%;background:var(--pink);border-radius:99px;transition:width 0.4s ease;}
+.prog-row{display:flex;justify-content:space-between;font-size:12px;color:var(--ink3);margin-top:6px;}
+.axis-badge{display:inline-block;font-size:12px;padding:4px 12px;border-radius:99px;background:var(--pink-light);color:var(--pink-dark);font-weight:500;margin-bottom:12px;}
+.q-text{font-size:18px;font-weight:500;color:var(--ink);line-height:1.6;margin-bottom:1.5rem;}
+.scale-head{display:flex;justify-content:space-between;font-size:11px;color:var(--ink3);margin-bottom:8px;}
+.scale-opts{display:flex;gap:8px;}
+.scale-btn{flex:1;aspect-ratio:1;border:0.5px solid var(--border);border-radius:10px;background:var(--surface);cursor:pointer;font-size:16px;font-weight:500;color:var(--ink2);transition:all .15s;}
+.scale-btn:hover{border-color:var(--pink);background:var(--pink-light);color:var(--pink);}
+.scale-btn.selected{border-color:var(--pink);background:var(--pink);color:white;}
+.btn-next{width:100%;padding:14px;background:var(--pink);color:white;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;margin-top:1.5rem;transition:opacity .15s;}
+.btn-next:disabled{opacity:.35;cursor:default;}
+
+/* LOADING */
+.loading-wrap{text-align:center;padding:4rem 0;}
+.loading-wrap .big{font-size:48px;animation:bounce2 1s ease-in-out infinite;}
+@keyframes bounce2{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+.loading-wrap p{font-size:15px;color:var(--ink2);margin-top:1rem;}
+.dots span{animation:blink 1.2s infinite;opacity:0;}
+.dots span:nth-child(2){animation-delay:.2s;}
+.dots span:nth-child(3){animation-delay:.4s;}
+@keyframes blink{0%,100%{opacity:0}50%{opacity:1}}
+
+/* RESULT */
+.result-eyebrow{text-align:center;font-size:12px;color:var(--ink3);letter-spacing:.08em;margin-bottom:6px;}
+.result-title{text-align:center;font-size:20px;font-weight:700;color:var(--ink);margin-bottom:1.25rem;line-height:1.4;}
+.type-cards{display:flex;gap:10px;margin-bottom:1.25rem;}
+.type-card{flex:1;background:var(--surface);border:0.5px solid var(--border);border-radius:14px;overflow:hidden;}
+.type-card-img{width:100%;aspect-ratio:1;background-size:400% 200%;background-repeat:no-repeat;}
+.type-card-body{padding:10px 10px 12px;text-align:center;}
+.type-pct{font-size:24px;font-weight:700;color:var(--ink);}
+.type-name{font-size:13px;color:var(--ink2);margin-top:2px;}
+.type-label{font-size:11px;background:var(--pink-light);color:var(--pink-dark);border-radius:99px;padding:3px 10px;display:inline-block;margin-top:5px;}
+.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:1rem;}
+.stat-card{background:var(--surface);border:0.5px solid var(--border);border-radius:12px;padding:14px;text-align:center;}
+.stat-label{font-size:11px;color:var(--ink3);margin-bottom:4px;}
+.stat-val{font-size:26px;font-weight:700;color:var(--ink);}
+.stat-sub{font-size:12px;color:var(--pink);margin-top:3px;font-weight:500;}
+.section-card{background:var(--surface);border:0.5px solid var(--border);border-radius:14px;padding:1.25rem;margin-bottom:1rem;}
+.section-title{font-size:14px;font-weight:700;color:var(--ink);margin-bottom:8px;}
+.section-body{font-size:13px;color:var(--ink2);line-height:1.8;}
+.advice-loading{font-size:13px;color:var(--ink3);}
+.compat-row{display:flex;align-items:center;gap:12px;}
+.compat-img{width:60px;height:60px;border-radius:10px;overflow:hidden;flex-shrink:0;background-size:400% 200%;background-repeat:no-repeat;}
+.compat-info .name{font-size:15px;font-weight:500;color:var(--ink);}
+.compat-info .score{font-size:12px;color:var(--pink);margin-top:2px;}
+.compat-info .note{font-size:12px;color:var(--ink3);margin-top:2px;}
+.share-box{background:var(--pink-light);border-radius:14px;padding:1.25rem;text-align:center;margin-bottom:1rem;font-size:14px;line-height:2;color:var(--ink);}
+.share-box strong{font-weight:700;}
+.btn-share{width:100%;padding:13px;background:var(--pink);color:white;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;margin-bottom:8px;}
+.btn-retry{width:100%;padding:13px;background:transparent;color:var(--pink);border:1.5px solid var(--pink);border-radius:12px;font-size:15px;font-weight:500;cursor:pointer;}
+.composition{margin-bottom:1rem;}
+.comp-title{font-size:12px;color:var(--ink3);margin-bottom:8px;}
+.comp-row{display:flex;align-items:center;gap:8px;margin-bottom:6px;}
+.comp-label{font-size:13px;color:var(--ink2);width:110px;flex-shrink:0;}
+.comp-bar-wrap{flex:1;height:6px;background:var(--border);border-radius:99px;overflow:hidden;}
+.comp-bar{height:100%;background:var(--pink);border-radius:99px;transition:width .8s ease;}
+.comp-pct{font-size:12px;color:var(--ink3);width:32px;text-align:right;}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- START -->
+<div class="screen active" id="screen-start">
+  <div class="start-hero">
+    <div class="big">💘</div>
+    <h1>あなたは何モテ？</h1>
+    <p>24問の質問に答えるだけで<br>あなたのモテタイプがわかります</p>
+  </div>
+  <div class="illust-grid" id="start-grid"></div>
+  <p class="start-note">8種類のモテタイプからメイン＋サブを診断</p>
+  <button class="btn-primary" onclick="startQuiz()">診断スタート ✨</button>
+</div>
+
+<!-- QUIZ -->
+<div class="screen" id="screen-quiz">
+  <div class="prog-wrap">
+    <div class="prog-bar"><div class="prog-fill" id="prog-fill" style="width:0%"></div></div>
+    <div class="prog-row"><span id="q-counter">1 / 24</span><span id="axis-label"></span></div>
+  </div>
+  <div class="axis-badge" id="axis-badge"></div>
+  <div class="q-text" id="q-text"></div>
+  <div class="scale-head"><span>全く当てはまらない</span><span>とても当てはまる</span></div>
+  <div class="scale-opts">
+    <button class="scale-btn" onclick="selectScore(1)">1</button>
+    <button class="scale-btn" onclick="selectScore(2)">2</button>
+    <button class="scale-btn" onclick="selectScore(3)">3</button>
+    <button class="scale-btn" onclick="selectScore(4)">4</button>
+    <button class="scale-btn" onclick="selectScore(5)">5</button>
+  </div>
+  <button class="btn-next" id="btn-next" onclick="nextQ()" disabled>次へ →</button>
+</div>
+
+<!-- LOADING -->
+<div class="screen" id="screen-loading">
+  <div class="loading-wrap">
+    <div class="big">🔮</div>
+    <p>診断中<span class="dots"><span>.</span><span>.</span><span>.</span></span></p>
+  </div>
+</div>
+
+<!-- RESULT -->
+<div class="screen" id="screen-result">
+  <div class="result-eyebrow">あなたのモテタイプ</div>
+  <div class="result-title" id="result-title"></div>
+  <div class="type-cards" id="type-cards"></div>
+  <div class="stats-grid">
+    <div class="stat-card"><div class="stat-label">モテ偏差値</div><div class="stat-val" id="stat-hensachi"></div><div class="stat-sub" id="stat-rank"></div></div>
+    <div class="stat-card"><div class="stat-label">密かに気になってる人数</div><div class="stat-val" id="stat-fans"></div><div class="stat-sub">人（推定）</div></div>
+  </div>
+  <div class="section-card">
+    <div class="section-title" id="desc-title"></div>
+    <div class="section-body" id="desc-text"></div>
+  </div>
+  <div class="section-card">
+    <div class="section-title">💌 AIからの恋愛アドバイス</div>
+    <div class="section-body" id="advice-text"><span class="advice-loading">考え中<span class="dots"><span>.</span><span>.</span><span>.</span></span></span></div>
+  </div>
+  <div class="section-card">
+    <div class="section-title">💑 相性の良いタイプ</div>
+    <div class="compat-row" id="compat-area"></div>
+  </div>
+  <div class="section-card">
+    <div class="section-title">📊 あなたのモテ構成</div>
+    <div id="comp-area"></div>
+  </div>
+  <div class="share-box" id="share-box"></div>
+  <button class="btn-share" onclick="copyShare()">📋 結果をコピーしてシェア</button>
+  <button class="btn-retry" onclick="restart()">もう一度診断する</button>
+</div>
+
+</div>
+<script>
+const TYPES = {
+  UNI:      {name:'養殖ウニ系',    emoji:'🧡',col:0,row:0,desc:'自覚のない人気者。自然体なのに好かれやすく、気づかないうちに誰かの恋心を育てている。特別なことをしていないのに「なんか気になる」と思われるのがあなたの特技。'},
+  BUTTERFLY:{name:'目立ち蝶々系',  emoji:'🦋',col:1,row:0,desc:'華やかな存在感で人を惹きつける恋愛強者。初対面から印象に残りやすく、恋愛市場では常に有利なポジション。あなたがいるだけで場の空気が変わる。'},
+  CAT:      {name:'野良猫系',      emoji:'🐈',col:2,row:0,desc:'自由で掴みどころがない。追いかけるより追いかけられることが多く、その距離感が絶妙にモテる。近づきたいのに近づけない、そんな魅力がある。'},
+  SHIBA:    {name:'柴犬系',        emoji:'🐕',col:3,row:0,desc:'安心感と誠実さが武器。派手さはないが最後に選ばれるタイプ。一緒にいると落ち着くと言われ、長期的な恋愛に強い。'},
+  SSR:      {name:'ガチャSSR系',   emoji:'👑',col:0,row:1,desc:'刺さる人には深く刺さる。万人受けしないが熱狂的なファンを生みやすい。あなたを好きになった人は高確率で沼に落ちる。'},
+  PLANT:    {name:'観葉植物系',    emoji:'🌿',col:1,row:1,desc:'じわじわ好きになられるタイプ。一緒にいると落ち着く癒し系で、知れば知るほど好きになってもらえる。長続きする恋愛向き。'},
+  POKEMON:  {name:'レアポケモン系',emoji:'🎒',col:2,row:1,desc:'独自の魅力を持つ希少種。出会った人の記憶に強く残り、ハマる人は猛烈にハマる。自分では普通だと思っているのに、全然普通じゃない。'},
+  TREASURE: {name:'国宝系',        emoji:'💎',col:3,row:1,desc:'高嶺の花タイプ。魅力は十分すぎるほどあるが、周りが勝手に諦めてしまうことも。実はモテていないのではなく、近寄られていないだけ。'},
+};
+
+const COMPAT = {
+  UNI:{UNI:85,BUTTERFLY:65,SHIBA:93,SSR:55,CAT:68,PLANT:86,POKEMON:70,TREASURE:60},
+  BUTTERFLY:{UNI:65,BUTTERFLY:80,SHIBA:85,SSR:82,CAT:70,PLANT:80,POKEMON:72,TREASURE:95},
+  SHIBA:{UNI:93,BUTTERFLY:85,SHIBA:88,SSR:58,CAT:95,PLANT:88,POKEMON:68,TREASURE:70},
+  SSR:{UNI:55,BUTTERFLY:82,SHIBA:58,SSR:90,CAT:85,PLANT:70,POKEMON:96,TREASURE:92},
+  CAT:{UNI:68,BUTTERFLY:70,SHIBA:95,SSR:85,CAT:88,PLANT:92,POKEMON:82,TREASURE:55},
+  PLANT:{UNI:86,BUTTERFLY:80,SHIBA:88,SSR:70,CAT:92,PLANT:85,POKEMON:91,TREASURE:68},
+  POKEMON:{UNI:70,BUTTERFLY:72,SHIBA:68,SSR:96,CAT:82,PLANT:91,POKEMON:88,TREASURE:84},
+  TREASURE:{UNI:60,BUTTERFLY:95,SHIBA:70,SSR:92,CAT:55,PLANT:68,POKEMON:84,TREASURE:90},
+};
+
+const COMPAT_NOTES = {
+  95:'運命的な相性✨',90:'最高の組み合わせ',80:'かなり相性が良い',70:'良い相性',0:'刺激的な関係'
+};
+
+const RANKS = [[80,'伝説級モテ'],[75,'学園アイドル級'],[70,'恋愛強者級'],[65,'安定人気級'],[60,'隠れ人気級'],[55,'じわモテ級'],[0,'これから開花級']];
+
+const AXIS_LABELS = {P:'✨ 華やかさ',W:'🤗 親しみやすさ',U:'🎯 希少性',F:'🐾 自由度'};
+
+const QS = [
+  {axis:'P',text:'初対面でも名前を覚えられやすい'},
+  {axis:'P',text:'人前に立つことに抵抗が少ない'},
+  {axis:'P',text:'SNSに投稿すると反応が来やすい'},
+  {axis:'P',text:'グループでは自然と目立つ方だ'},
+  {axis:'P',text:'服装や見た目には気を使う'},
+  {axis:'P',text:'「なんかオーラあるね」と言われたことがある'},
+  {axis:'W',text:'相談を持ちかけられることが多い'},
+  {axis:'W',text:'初対面の人とも比較的すぐ打ち解ける'},
+  {axis:'W',text:'一緒にいると安心すると言われる'},
+  {axis:'W',text:'頼みごとをされることが多い'},
+  {axis:'W',text:'年齢問わず仲良くなれる'},
+  {axis:'W',text:'友達から紹介されることが多い'},
+  {axis:'U',text:'自分は少し変わっていると思う'},
+  {axis:'U',text:'好きなものへのこだわりが強い'},
+  {axis:'U',text:'「そんな考え方初めて聞いた」と言われる'},
+  {axis:'U',text:'周りに似た人があまりいない'},
+  {axis:'U',text:'人から理解されないと感じることがある'},
+  {axis:'U',text:'好き嫌いが分かれるタイプだと思う'},
+  {axis:'F',text:'一人の時間はかなり大切'},
+  {axis:'F',text:'束縛されるのは苦手'},
+  {axis:'F',text:'LINEの返信速度は気分に左右される'},
+  {axis:'F',text:'追う恋愛より追われる恋愛が多い'},
+  {axis:'F',text:'突然予定を変更することがある'},
+  {axis:'F',text:'人に合わせるより自分を優先したい'},
+];
+
+function imgStyle(t, w, h) {
+  const {col,row} = TYPES[t];
+  return `background-image:url('/illust.png');background-size:400% 200%;background-position:${col*(100/3)}% ${row*100}%;width:${w||'100%'};height:${h||'100%'};`;
+}
+
+// スタート画面イラスト
+document.getElementById('start-grid').innerHTML = Object.keys(TYPES).map(t =>
+  `<div class="illust-cell"><div style="${imgStyle(t)}"></div></div>`
+).join('');
+
+let cur=0, answers=[], sel=null, shareText='';
+
+function startQuiz() { cur=0; answers=[]; sel=null; showScreen('quiz'); renderQ(); }
+
+function renderQ() {
+  const q=QS[cur];
+  document.getElementById('prog-fill').style.width=((cur+1)/24*100)+'%';
+  document.getElementById('q-counter').textContent=`${cur+1} / 24`;
+  document.getElementById('axis-badge').textContent=AXIS_LABELS[q.axis];
+  document.getElementById('axis-label').textContent=AXIS_LABELS[q.axis];
+  document.getElementById('q-text').textContent=`Q${cur+1}. ${q.text}`;
+  sel=null;
+  document.getElementById('btn-next').disabled=true;
+  document.querySelectorAll('.scale-btn').forEach(b=>b.classList.remove('selected'));
+}
+
+function selectScore(v) {
+  sel=v;
+  document.querySelectorAll('.scale-btn').forEach((b,i)=>b.classList.toggle('selected',i+1===v));
+  document.getElementById('btn-next').disabled=false;
+}
+
+function nextQ() {
+  if (sel===null) return;
+  answers.push({axis:QS[cur].axis, val:sel});
+  cur++;
+  if (cur>=24) { calcResult(); return; }
+  renderQ();
+}
+
+function calcResult() {
+  showScreen('loading');
+  let P=0,W=0,U=0,F=0;
+  answers.forEach(a=>{ if(a.axis==='P')P+=a.val; else if(a.axis==='W')W+=a.val; else if(a.axis==='U')U+=a.val; else F+=a.val; });
+
+  const scores = {
+    BUTTERFLY:P+W, TREASURE:P+(30-W), SHIBA:W+(30-U), PLANT:W+U,
+    SSR:U+F, POKEMON:U+(30-F), CAT:F+(30-W), UNI:W+(30-P),
+  };
+  const sorted = Object.entries(scores).sort((a,b)=>b[1]-a[1]);
+  const mainKey=sorted[0][0], subKey=sorted[1][0];
+  const total=Object.values(scores).reduce((a,b)=>a+b,0);
+  const mainPct=Math.round(scores[mainKey]/total*100);
+  const subPct=Math.round(scores[subKey]/total*100);
+
+  const moteIndex=P*0.3+W*0.3+U*0.2+F*0.2;
+  const hensachi=Math.min(80,Math.max(50,Math.round(50+((moteIndex-18)/12)*30)));
+  const rank=RANKS.find(r=>hensachi>=r[0])[1];
+  const fans=Math.round(hensachi/10+Math.random()*3+1);
+
+  const topTypes = sorted.slice(0,4).map(([k,s])=>({key:k,pct:Math.round(s/total*100)}));
+  const bestCompat = Object.keys(TYPES).filter(k=>k!==mainKey&&k!==subKey)
+    .map(k=>({key:k,score:COMPAT[mainKey][k]})).sort((a,b)=>b.score-a.score)[0];
+
+  showResult({mainKey,subKey,mainPct,subPct,hensachi,rank,fans,topTypes,bestCompat,scores});
+  fetchAdvice(mainKey, subKey, hensachi, rank);
+}
+
+function showResult({mainKey,subKey,mainPct,subPct,hensachi,rank,fans,topTypes,bestCompat}) {
+  const main=TYPES[mainKey], sub=TYPES[subKey];
+
+  document.getElementById('result-title').textContent=`${main.emoji}${main.name} × ${sub.emoji}${sub.name}`;
+
+  document.getElementById('type-cards').innerHTML=`
+    <div class="type-card">
+      <div class="type-card-img" style="${imgStyle(mainKey)}"></div>
+      <div class="type-card-body"><div class="type-pct">${mainPct}%</div><div class="type-name">${main.name}</div><div class="type-label">メイン</div></div>
+    </div>
+    <div class="type-card">
+      <div class="type-card-img" style="${imgStyle(subKey)}"></div>
+      <div class="type-card-body"><div class="type-pct">${subPct}%</div><div class="type-name">${sub.name}</div><div class="type-label">サブ</div></div>
+    </div>`;
+
+  document.getElementById('stat-hensachi').textContent=hensachi;
+  document.getElementById('stat-rank').textContent=rank;
+  document.getElementById('stat-fans').textContent=fans;
+
+  document.getElementById('desc-title').textContent=`${main.emoji} ${main.name}とは`;
+  document.getElementById('desc-text').textContent=main.desc;
+
+  const bc=TYPES[bestCompat.key];
+  const compatNote=Object.entries(COMPAT_NOTES).reverse().find(([s])=>bestCompat.score>=Number(s))[1];
+  document.getElementById('compat-area').innerHTML=`
+    <div class="compat-img" style="${imgStyle(bestCompat.key,'60px','60px')}"></div>
+    <div class="compat-info">
+      <div class="name">${bc.emoji} ${bc.name}</div>
+      <div class="score">相性スコア ${bestCompat.score}点</div>
+      <div class="note">${compatNote}</div>
+    </div>`;
+
+  document.getElementById('comp-area').innerHTML=topTypes.map(({key,pct})=>`
+    <div class="comp-row">
+      <div class="comp-label">${TYPES[key].emoji} ${TYPES[key].name}</div>
+      <div class="comp-bar-wrap"><div class="comp-bar" style="width:0%" data-pct="${pct}"></div></div>
+      <div class="comp-pct">${pct}%</div>
+    </div>`).join('');
+
+  shareText=`💘 あなたは何モテ？\n${main.emoji}${main.name} × ${sub.emoji}${sub.name}\nモテ偏差値：${hensachi}　${rank}\n${main.emoji}${mainPct}%　${sub.emoji}${subPct}%\n密かに気になってる人：${fans}人`;
+  document.getElementById('share-box').innerHTML=shareText.replace(/\n/g,'<br>');
+
+  showScreen('result');
+  setTimeout(()=>{ document.querySelectorAll('.comp-bar').forEach(b=>{ b.style.width=b.dataset.pct+'%'; }); }, 200);
+}
+
+async function fetchAdvice(mainKey, subKey, hensachi, rank) {
+  try {
+    const res = await fetch('/api/advice', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({mainType:TYPES[mainKey].name, subType:TYPES[subKey].name, hensachi, rank}),
+    });
+    const data = await res.json();
+    document.getElementById('advice-text').textContent = data.advice || 'アドバイスを取得できませんでした。';
+  } catch(e) {
+    document.getElementById('advice-text').textContent = '自分らしさを大切に。あなたのモテは本物です。';
+  }
+}
+
+function copyShare() {
+  navigator.clipboard.writeText(shareText).then(()=>{
+    const btn=document.querySelector('.btn-share');
+    btn.textContent='✅ コピーしました！';
+    setTimeout(()=>{ btn.textContent='📋 結果をコピーしてシェア'; }, 2000);
+  }).catch(()=>{ alert(shareText); });
+}
+
+function restart() { showScreen('start'); }
+
+function showScreen(name) {
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('screen-'+name).classList.add('active');
+  window.scrollTo(0,0);
+}
+</script>
+</body>
+</html>
